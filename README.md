@@ -239,8 +239,17 @@ Corrected Power = Stimulus Power − Baseline Power
 - **Mean F1-score**: 0.535
 
 ---
+## 11. Phase 5 (Bonus): Band Power Insights
 
-## 11. Discussion
+Mean theta, alpha, and beta power compared across valence classes
+
+Alpha power tended to be higher during low-valence states
+
+Beta power increased for high-valence samples
+
+Confirms that frequency-domain EEG features encode affective information
+
+## 12. Discussion
 
 - The dataset exhibits mild class imbalance, with more low-valence samples than high-valence samples.
 - Accuracy alone was not a reliable metric; therefore, F1-score was emphasized.
@@ -249,7 +258,7 @@ Corrected Power = Stimulus Power − Baseline Power
 
 ---
 
-## 12. Artifact Subspace Reconstruction (ASR) – Limitation
+## 13. Artifact Subspace Reconstruction (ASR) – Limitation
 
 Artifact Subspace Reconstruction (ASR) is an automated EEG denoising technique that
 repairs short-duration, high-amplitude artifacts by comparing signal statistics
@@ -263,14 +272,35 @@ ASR-based denoising using EEGLAB-compatible pipelines.
 
 ---
 
-## 13. Project Status Summary
+## 14. Project Status Summary
 
-- Dataset understanding: ✅
-- Exploratory VAD analysis (Phase 1): ✅
-- EEG extraction: ✅
-- EEG preprocessing (Filtering, ICA, CAR): ✅
-- Feature extraction: ✅
-- Affect recognition & evaluation: ✅
+- **Dataset Understanding**: ✅
+  DREAMER dataset structure explored and validated; EEG and VAD annotations correctly extracted.
+
+- **Exploratory VAD Analysis (Phase 1)**: ✅
+  Arousal–Valence emotional space visualization and correlation analysis completed, revealing
+  strong arousal–dominance coupling and weak valence dependency.
+
+- **EEG Extraction**: ✅
+  Multi-channel EEG signals successfully extracted and formatted for analysis using MNE.
+
+- **EEG Preprocessing (Phase 2)**: ✅
+  Signal cleaning performed using 50 Hz notch filtering, 0.5–45 Hz band-pass filtering,
+  ICA-based artifact removal, and Common Average Referencing (CAR), with PSD-based validation.
+
+- **Feature Extraction (Phase 3)**: ✅
+  Power Spectral Density computed using Welch’s method; theta, alpha, and beta band power
+  features extracted with baseline correction to reduce subject-specific bias.
+
+- **Affect Recognition & Evaluation (Phase 4)**: ✅
+  Valence-based emotion classification performed using class-weighted Logistic Regression
+  with stratified cross-validation; performance evaluated using accuracy and F1-score.
+
+- **Advanced Insights & Interpretation (Phase 5 – Partial)**: ✅
+  Frequency-domain insights were derived by analyzing band power behavior across emotional
+  conditions. Preprocessing effects on spectral quality were validated using PSD plots.
+  Inter-subject variability and limitations of spatial analysis were critically discussed.
+
 
 ---
 ```
