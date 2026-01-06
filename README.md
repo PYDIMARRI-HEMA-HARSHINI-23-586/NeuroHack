@@ -300,6 +300,8 @@ ASR-based denoising using EEGLAB-compatible pipelines.
   Frequency-domain insights were derived by analyzing band power behavior across emotional
   conditions. Preprocessing effects on spectral quality were validated using PSD plots.
   Inter-subject variability and limitations of spatial analysis were critically discussed.
+  Band power analysis across emotions
+  Frequency-domain insight and interpretation
 
 
 ---
