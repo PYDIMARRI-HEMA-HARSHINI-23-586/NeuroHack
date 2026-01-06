@@ -8,6 +8,80 @@
 - **Stimuli**: 18 audio-visual clips per subject
 - **Annotations**: Valence, Arousal, Dominance (VAD) self-reports
 
+Project Setup & Installation
+
+## Project Setup & Installation
+
+### Prerequisites
+
+- Python **3.8 or above**
+- Git
+- Virtual environment support (recommended)
+
+### Step 1: Clone the Repository
+
+```bash
+git clone <your-repository-url>
+cd NeuroHack
+
+Step 2: Create and Activate Virtual Environment
+python -m venv eeg_env
+
+
+Windows
+
+eeg_env\Scripts\activate
+
+
+Linux / macOS
+
+source eeg_env/bin/activate
+
+Step 3: Install Dependencies
+pip install -r requirements.txt
+
+
+Required libraries include:
+
+numpy
+
+scipy
+
+matplotlib
+
+seaborn
+
+pandas
+
+scikit-learn
+
+mne
+
+Step 4: Download Dataset
+
+Download the DREAMER dataset from:
+https://drive.google.com/file/d/1RaOPoqrRaUEjFlaWsSrW1XHLSuZfOj0a/view
+
+Place the file as:
+
+data/DREAMER.mat
+
+Step 5: Run the Pipeline (Suggested Order)
+# Phase 1: Exploratory Analysis
+python src/phase1_vad_inspect.py
+python src/phase1_arousal_valence_plot.py
+python src/phase1_vad_correlation.py
+python src/phase1_vad_barplot.py
+
+# Phase 2: EEG Preprocessing
+python src/create_raw_and_plot.py
+
+# Phase 3: Feature Extraction
+python src/build_dataset.py
+
+# Phase 4: Classification
+python src/train_classifier.py
+
 ---
 
 ## Pipeline Overview
@@ -18,6 +92,7 @@
    - 50 Hz notch filtering
    - 0.5–45 Hz band-pass filtering
    - ICA-based artifact removal
+   - Common Average Referencing (CAR)
 4. Feature extraction
    - Power Spectral Density (PSD)
    - Theta, Alpha, Beta band power
@@ -57,24 +132,42 @@ DREAMER → Data → Subject → EEG → {baseline, stimuli}
 
 ---
 
-## 4. Power Spectral Density (PSD) Analysis – Before Filtering
+## 4. Exploratory Analysis of Emotional Ratings (Phase 1)
+
+### 4.1 Arousal–Valence Emotional Space
+
+- Plotted stimuli ratings in a 2D arousal–valence space.
+- Observed that ratings are distributed across the full emotional space, with no strong clustering, indicating diverse emotional responses to the stimuli.
+
+### 4.2 VAD Distribution Analysis
+
+- Computed mean Valence, Arousal, and Dominance scores across all subjects and stimuli.
+- Bar plots indicate a relatively balanced distribution of emotional dimensions.
+
+### 4.3 Correlation Analysis
+
+- Pearson correlation analysis was performed between Valence, Arousal, and Dominance.
+- A strong positive correlation was observed between Arousal and Dominance (r ≈ 0.69).
+- Valence showed weak correlation with both Arousal and Dominance, suggesting relative independence of emotional pleasantness from activation and control dimensions.
+
+---
+
+## 5. EEG Preprocessing (Phase 2)
+
+### 5.1 Power Spectral Density (PSD) – Before Filtering
 
 - Computed and visualized PSD of raw EEG signals.
 - Identified a prominent peak around **50 Hz**, corresponding to power-line interference.
 
----
-
-## 5. EEG Preprocessing
-
-### 5.1 50 Hz Notch Filtering
+### 5.2 50 Hz Notch Filtering
 
 - Applied a 50 Hz notch filter to suppress power-line noise.
-- PSD comparison before and after filtering showed significant attenuation of the 50 Hz peak, confirming effective noise removal.
+- PSD comparison before and after filtering showed significant attenuation of the 50 Hz peak.
 
-### 5.2 Band-Pass Filtering (0.5–45 Hz)
+### 5.3 Band-Pass Filtering (0.5–45 Hz)
 
 - Applied a 0.5–45 Hz band-pass filter to remove slow baseline drift and high-frequency muscle artifacts.
-- PSD analysis confirmed suppression of non-neural frequency components while preserving brain-relevant theta, alpha, and beta activity.
+- PSD analysis confirmed preservation of theta, alpha, and beta band activity.
 
 ---
 
@@ -85,43 +178,53 @@ Independent Component Analysis (ICA) was applied to decompose EEG signals into i
 - ICA separated mixed EEG signals into components corresponding to neural activity and artifacts.
 - Due to the absence of electrode location information in the dataset, scalp topographies could not be generated.
 - Artifact components were identified using temporal characteristics.
-- Components exhibiting large, slow deflections typical of eye-blink activity were excluded.
-- Visual comparison of EEG signals before and after ICA confirmed reduction of blink-related artifacts.
+- The rejected component exhibited large-amplitude, slow deflections consistent with eye-blink artifacts.
+- Visual comparison of EEG signals before and after ICA confirmed reduction of blink-related transients.
 
-Although EEG signals remain visually complex after ICA, the large synchronized blink-related transients observed before ICA were reduced. ICA removes specific artifact sources rather than smoothing the signal.
+Although EEG signals remain visually complex after ICA, ICA removes specific artifact sources rather than smoothing the signal.
 
 ---
 
-## 7. Feature Extraction
+## 7. Common Average Referencing (CAR)
 
-### 7.1 Power Spectral Density
+- Common Average Referencing was applied after ICA.
+- Each EEG channel was re-referenced to the global average across all channels.
+- CAR reduces common-mode noise shared across electrodes and is particularly suitable for low-density EEG systems such as the 14-channel Emotiv headset.
 
-- PSD was computed for each EEG channel using **Welch’s method** to obtain frequency-domain representations.
+---
 
-### 7.2 Band Power Features
+## 8. Feature Extraction (Phase 3)
+
+### 8.1 Power Spectral Density
+
+- PSD was computed for each EEG channel using **Welch’s method**.
+
+### 8.2 Band Power Features
 
 - Band power features were extracted for:
   - **Theta**: 4–8 Hz
   - **Alpha**: 8–13 Hz
   - **Beta**: 13–30 Hz
 
-### 7.3 Baseline Correction
+### 8.3 Baseline Correction
 
-- Baseline correction was applied by subtracting baseline band power from stimulus band power.
-- This accounts for subject-specific resting-state differences and highlights stimulus-induced neural activity.
+- Baseline EEG segments were used to compute resting-state band power.
+- Baseline correction was applied as:
+
+Corrected Power = Stimulus Power − Baseline Power
+
+- This reduces subject-specific bias and highlights stimulus-induced neural activity.
 
 ---
 
-## 8. Affect Recognition (Valence Classification)
+## 9. Affect Recognition (Phase 4)
 
-### Label Processing
+### 9.1 Label Processing
 
 - Continuous valence ratings were converted into binary classes (High vs Low Valence).
-- Median-based thresholding was used to reduce bias and maintain balanced class separation.
+- Median-based thresholding was used to reduce bias and ensure balanced class separation.
 
----
-
-## 9. Classification Setup
+### 9.2 Classification Setup
 
 - **Classifier**: Logistic Regression
 - **Class Weighting**: Balanced
@@ -141,19 +244,33 @@ Although EEG signals remain visually complex after ICA, the large synchronized b
 
 - The dataset exhibits mild class imbalance, with more low-valence samples than high-valence samples.
 - Accuracy alone was not a reliable metric; therefore, F1-score was emphasized.
-- Class-weighted Logistic Regression significantly improved minority-class recognition, reflected in the higher F1-score, albeit at the cost of reduced overall accuracy.
+- Class-weighted Logistic Regression significantly improved minority-class recognition, reflected by a higher F1-score, at the cost of reduced overall accuracy.
 - The moderate performance highlights the inherent difficulty of EEG-based emotion recognition and strong inter-subject variability.
 
 ---
 
-## 12. Current Status
+## 12. Artifact Subspace Reconstruction (ASR) – Limitation
 
-- Dataset understanding: ✅
-- EEG extraction: ✅
-- Raw EEG visualization: ✅
-- Notch & band-pass filtering: ✅
-- ICA artifact removal: ✅
-- Feature extraction: ✅
-- Classification & evaluation: ✅
+Artifact Subspace Reconstruction (ASR) is an automated EEG denoising technique that
+repairs short-duration, high-amplitude artifacts by comparing signal statistics
+against a clean reference subspace using a cutoff parameter (k).
+
+In this work, ASR was not applied due to the absence of a reliable clean reference
+segment and the lack of native ASR support in the MNE-Python framework. Instead,
+artifact mitigation was achieved using a combination of band-pass filtering,
+ICA-based artifact removal, and Common Average Referencing. Future work may explore
+ASR-based denoising using EEGLAB-compatible pipelines.
 
 ---
+
+## 13. Project Status Summary
+
+- Dataset understanding: ✅
+- Exploratory VAD analysis (Phase 1): ✅
+- EEG extraction: ✅
+- EEG preprocessing (Filtering, ICA, CAR): ✅
+- Feature extraction: ✅
+- Affect recognition & evaluation: ✅
+
+---
+```

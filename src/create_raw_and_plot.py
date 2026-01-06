@@ -50,7 +50,10 @@ raw_notch.plot_psd(fmax=60)
 raw_bandpass = raw_notch.copy().filter(l_freq=0.5, h_freq=45)
 
 # Plot PSD after band-pass filtering
-raw_bandpass.plot_psd(fmax=60)
+fig = raw_bandpass.plot_psd(fmax=45, show=False)
+fig.savefig("outputs/psd_eeg_bandpower.png", dpi=300, bbox_inches="tight")
+plt.show(block=True)
+
 
 
 
@@ -88,6 +91,17 @@ ica.apply(raw_ica_cleaned)
 raw_bandpass.plot(duration=5, title="Before ICA")
 raw_ica_cleaned.plot(duration=5, title="After ICA")
 
+# =================================================
+# STEP 20: Common Average Referencing (CAR)
+# =================================================
+
+# Apply Common Average Referencing
+raw_car = raw_ica_cleaned.copy()
+raw_car.set_eeg_reference(ref_channels="average")
+
+# Visual comparison
+raw_ica_cleaned.plot(duration=5, title="After ICA (Before CAR)")
+raw_car.plot(duration=5, title="After CAR")
 
 
 
