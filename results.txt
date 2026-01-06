@@ -1,0 +1,11 @@
+Affect Recognition Results (Valence Classification)
+
+Classifier: Logistic Regression (class_weight = balanced)
+Cross-validation: 5-fold Stratified
+
+Mean Accuracy: 0.437
+Mean F1 Score: 0.535
+
+Note:
+Lower accuracy is expected due to class imbalance.
+F1-score is emphasized as the primary evaluation metric.
